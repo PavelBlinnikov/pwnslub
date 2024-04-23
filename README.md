@@ -22,9 +22,9 @@ Then using the following command should be enough to get you started.
 
 It is possible to modify libslub and reload it in your debugger as described in the [Development Guide](docs/DevelopmentGuide.md).
 
-## Prepare
+## Preparation
 
-To make this module work you need some kind of debug info. In case of DWARF everything will work withoun any problem but speaking of BTF you'll need some preps.
+To make this module work you need some kind of debug info. In case of DWARF everything will work without any problem but speaking of BTF you'll need some preps.
 
 ```bash
 # .BTF extract
