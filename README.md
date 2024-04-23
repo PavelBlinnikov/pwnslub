@@ -22,6 +22,22 @@ Then using the following command should be enough to get you started.
 
 It is possible to modify libslub and reload it in your debugger as described in the [Development Guide](docs/DevelopmentGuide.md).
 
+## Prepare
+
+To make this module work you need some kind of debug info. In case of DWARF everything will work withoun any problem but speaking of BTF you'll need some preps.
+
+```bash
+# .BTF extract
+pahole --compile vmlinux > /tmp/structs.c
+gcc -fno-eliminate-unused-debug-types -c -ggdb -o /tmp/symbols.o /tmp/structs.c
+```
+
+And then in GDB you need to load those symbols
+```
+(gdb) add-symbol-file /tmp/structs.o
+```
+
+
 # Usage
 
 Please refer to the [User Guide](docs/UserGuide.md).
