@@ -104,10 +104,11 @@ class sb:
         
         self.kcl = kcl.KernelCompatibilityLayer(self.release)
 
-        self.cpu_num = gdb.lookup_global_symbol("nr_cpu_ids").value()
-        self.per_cpu_offset = gdb.lookup_global_symbol("__per_cpu_offset").value()
+        self.cpu_num = gdb.parse_and_eval("*(unsigned int*)&nr_cpu_ids")
+        self.per_cpu_offset = gdb.parse_and_eval(f"*(unsigned long (*)[{int(self.cpu_num)}])&__per_cpu_offset")
+        # TODO: memstart_addr only exists in powerpc and arm so needs testing
         try:
-            self.memstart_addr = gdb.lookup_global_symbol("memstart_addr").value()
+            self.memstart_addr = gdb.parse_and_eval("(phys_addr_t)memstart_addr").value()
         except Exception:
             self.memstart_addr = None
 
@@ -152,7 +153,9 @@ class sb:
         https://futurewei-cloud.github.io/ARM-Datacenter/qemu/how-to-configure-qemu-numa-nodes/
         https://elixir.bootlin.com/linux/v4.15/source/include/linux/nodemask.h#L433
         """
-        node_states = gdb.lookup_global_symbol("node_states").value()
+        node_states_len = int(gdb.lookup_static_symbol("NR_NODE_STATES").value())
+        
+        node_states = gdb.parse_and_eval(f"*(nodemask_t (*)[{node_states_len}])&node_states")
         node_mask = node_states[1]["bits"][0]  # 1 means N_ONLINE
         return bin(node_mask).count("1")
 
@@ -256,7 +259,7 @@ class sb:
         # The head of the list for all slab caches on the system (e.g. "kmalloc-64", etc.)
         # https://elixir.bootlin.com/linux/v5.15/source/mm/slab.h#L72
         # lookup_global_symbol(), see https://sourceware.org/gdb/onlinedocs/gdb/Symbols-In-Python.html
-        slab_caches = gdb.lookup_global_symbol("slab_caches").value()
+        slab_caches = gdb.parse_and_eval("*(struct list_head*)&slab_caches")
 
         return sb.for_each_entry(kmem_cache_type, slab_caches, "list")
 
@@ -539,7 +542,7 @@ class sb:
 
         for node_id in range(self.node_num):
             node_cache = slab_cache["node"][node_id]
-            slab = gdb.lookup_type("struct {}".format(slab_or_page)).pointer()
+            slab = gdb.lookup_type("struct {}".format(slab_or_page))
             partials = list(self.for_each_entry(slab, node_cache["partial"], slab_list))
             if partials:
                 for slab in partials:

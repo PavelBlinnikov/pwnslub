@@ -35,6 +35,6 @@ class KernelCompatibilityLayer:
 def get_kernel_version():
     """read the current kernel version using gdb
     """
-    version_string = gdb.parse_and_eval("(char *)linux_banner").string()
+    version_string = gdb.parse_and_eval("(char *)&linux_banner").string()
     release = re.search(r'(\d+\.\d+\.\d+)', version_string).group(1)
     return release
