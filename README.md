@@ -34,7 +34,7 @@ gcc -fno-eliminate-unused-debug-types -c -ggdb -o /tmp/symbols.o /tmp/structs.c
 
 And then in GDB you need to load those symbols
 ```
-(gdb) add-symbol-file /tmp/structs.o
+(gdb) add-symbol-file /tmp/symbols.o
 ```
 
 
